@@ -2,7 +2,7 @@ import Image from "next/image";
 
 import { TradeForm } from "@/features/trade-entry/ui/trade-form";
 import { SkipForm } from "@/features/skip-entry/ui/skip-form";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 
 import { getDayTitleLabel } from "@/shared/lib/date";
@@ -55,6 +55,10 @@ export const DayDetails = ({
   const [previewAttachment, setPreviewAttachment] = useState<DayAttachment | null>(null);
   const [tradeDraft, setTradeDraft] = useState<TradeRecord | null>(null);
   const [skippedDraft, setSkippedDraft] = useState<SkippedTradeRecord | null>(null);
+  const [commentDraft, setCommentDraft] = useState(dayRecord.comment);
+  const [moodDraft, setMoodDraft] = useState<MoodTag | "">(dayRecord.mood ?? "");
+  const commentDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const moodDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dayTitle = getDayTitleLabel(dayRecord.date);
   const dayTradeCount = dayRecord.trades.length;
   const dayWins = dayRecord.trades.filter((trade) => trade.result === "win").length;
@@ -75,6 +79,18 @@ export const DayDetails = ({
     event.target.value = "";
   };
 
+  useEffect(
+    () => () => {
+      if (commentDebounceRef.current) {
+        clearTimeout(commentDebounceRef.current);
+      }
+      if (moodDebounceRef.current) {
+        clearTimeout(moodDebounceRef.current);
+      }
+    },
+    [],
+  );
+
   return (
     <section className="details">
       <h2>Детали дня: {dayTitle}</h2>
@@ -83,8 +99,17 @@ export const DayDetails = ({
           <label className="details__comment">
             Комментарий по дню
             <textarea
-              value={dayRecord.comment}
-              onChange={(event) => onUpdateComment(event.target.value)}
+              value={commentDraft}
+              onChange={(event) => {
+                const nextComment = event.target.value;
+                setCommentDraft(nextComment);
+                if (commentDebounceRef.current) {
+                  clearTimeout(commentDebounceRef.current);
+                }
+                commentDebounceRef.current = setTimeout(() => {
+                  onUpdateComment(nextComment);
+                }, 450);
+              }}
               rows={3}
               placeholder="Что было по плану, где была слабость, выводы..."
             />
@@ -95,8 +120,17 @@ export const DayDetails = ({
           <label>
             Эмоциональное состояние
             <select
-              value={dayRecord.mood ?? ""}
-              onChange={(event) => onUpdateMood(event.target.value ? (event.target.value as MoodTag) : undefined)}
+              value={moodDraft}
+              onChange={(event) => {
+                const nextMood = event.target.value ? (event.target.value as MoodTag) : undefined;
+                setMoodDraft(event.target.value as MoodTag | "");
+                if (moodDebounceRef.current) {
+                  clearTimeout(moodDebounceRef.current);
+                }
+                moodDebounceRef.current = setTimeout(() => {
+                  onUpdateMood(nextMood);
+                }, 300);
+              }}
             >
               <option value="">Не указано</option>
               {moodOptions.map((option) => (

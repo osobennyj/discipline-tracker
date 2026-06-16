@@ -377,6 +377,7 @@ export default function HomePage() {
       />
 
       <DayDetails
+        key={selectedDateKey}
         dayRecord={selectedDay}
         onAddTrade={addTradeHandler}
         onUpdateTrade={updateTradeHandler}
