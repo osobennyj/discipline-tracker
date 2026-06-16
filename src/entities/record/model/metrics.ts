@@ -45,17 +45,29 @@ const toMonthRecords = (journal: TradingJournal, monthDate: Date): DayRecord[] =
 };
 
 const getCurrentGreenStreak = (journal: TradingJournal, monthDate: Date): number => {
+  const now = new Date();
   const daysInMonth = getDaysInMonth(monthDate);
+  const isCurrentMonth =
+    monthDate.getFullYear() === now.getFullYear() && monthDate.getMonth() === now.getMonth();
+  const isFutureMonth =
+    monthDate.getFullYear() > now.getFullYear() ||
+    (monthDate.getFullYear() === now.getFullYear() && monthDate.getMonth() > now.getMonth());
+
+  if (isFutureMonth) return 0;
+
+  const lastEvaluatedDay = isCurrentMonth ? Math.max(now.getDate() - 1, 0) : daysInMonth;
+  if (lastEvaluatedDay === 0) return 0;
+
   let streak = 0;
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
+  for (let day = lastEvaluatedDay; day >= 1; day -= 1) {
     const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
     const key = formatDateKey(date);
     const status = getDayStatus(journal[key]);
     if (status === "green") {
       streak += 1;
     } else {
-      streak = 0;
+      break;
     }
   }
 

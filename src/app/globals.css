@@ -199,6 +199,13 @@ body {
   text-transform: capitalize;
 }
 
+.calendar__legend {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
 .calendar__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -434,11 +441,22 @@ body {
   gap: 4px;
 }
 
-.day-info__list p {
+.day-info__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.day-info__item-text {
+  margin: 0;
+}
+
+.day-info__item-actions {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
-  flex-wrap: wrap;
 }
 
 .form {

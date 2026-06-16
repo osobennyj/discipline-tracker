@@ -55,6 +55,7 @@ export const DisciplineCalendar = ({
           );
         })}
       </div>
+      <p className="calendar__legend">Формат под датой: сделки / пропуски</p>
     </section>
   );
 };

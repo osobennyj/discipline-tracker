@@ -93,7 +93,7 @@ export const DayDetails = ({
 
   return (
     <section className="details">
-      <h2>Детали дня: {dayTitle}</h2>
+      <h2>{dayTitle}</h2>
       <div className="details__top">
         <div className="details__meta">
           <label className="details__comment">
@@ -351,27 +351,35 @@ export const DayDetails = ({
 
           <div className="day-info__list">
             {dayRecord.trades.slice(-4).map((trade) => (
-              <p key={trade.id}>
-                {trade.asset} / {trade.result} / RR {trade.rr}
-                <button type="button" onClick={() => setTradeDraft(trade)}>
-                  Ред.
-                </button>
-                <button type="button" onClick={() => onDeleteTrade(trade.id)}>
-                  Удал.
-                </button>
-              </p>
+              <div key={trade.id} className="day-info__item">
+                <p className="day-info__item-text">
+                  {trade.asset} / {trade.result} / RR {trade.rr}
+                </p>
+                <div className="day-info__item-actions">
+                  <button type="button" onClick={() => setTradeDraft(trade)}>
+                    Ред.
+                  </button>
+                  <button type="button" onClick={() => onDeleteTrade(trade.id)}>
+                    Удал.
+                  </button>
+                </div>
+              </div>
             ))}
-            {dayRecord.trades.length === 0 && <p>Сделок пока нет.</p>}
             {dayRecord.skippedTrades.slice(-4).map((record) => (
-              <p key={record.id}>
-                {record.asset} / {record.hypotheticalResult} / RR {record.hypotheticalRr}
-                <button type="button" onClick={() => setSkippedDraft(record)}>
-                  Ред.
-                </button>
-                <button type="button" onClick={() => onDeleteSkipped(record.id)}>
-                  Удал.
-                </button>
-              </p>
+              <div key={record.id} className="day-info__item">
+                <p className="day-info__item-text">
+                  {record.asset} / {record.hypotheticalResult} / RR {record.hypotheticalRr}
+                  {record.reason ? ` / Причина: ${record.reason}` : ""}
+                </p>
+                <div className="day-info__item-actions">
+                  <button type="button" onClick={() => setSkippedDraft(record)}>
+                    Ред.
+                  </button>
+                  <button type="button" onClick={() => onDeleteSkipped(record.id)}>
+                    Удал.
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </article>
