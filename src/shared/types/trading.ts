@@ -5,7 +5,8 @@ export type MoodTag = "calm" | "neutral" | "stressed" | "tilted";
 export interface DayAttachment {
   id: string;
   name: string;
-  dataUrl: string;
+  path: string;
+  url: string;
   createdAt: string;
 }
 
@@ -24,6 +25,7 @@ export interface TradeRecord {
 
 export interface SkippedTradeRecord {
   id: string;
+  asset: string;
   reason: string;
   hypotheticalResult: TradeResult;
   hypotheticalRr: number;
@@ -31,9 +33,11 @@ export interface SkippedTradeRecord {
 }
 
 export interface DayRecord {
+  id?: string;
   date: string;
   comment: string;
   mood?: MoodTag;
+  noTradeDay?: boolean;
   trades: TradeRecord[];
   skippedTrades: SkippedTradeRecord[];
   attachments: DayAttachment[];

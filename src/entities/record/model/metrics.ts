@@ -5,12 +5,11 @@ import type { DayRecord, TradeRecord, TradingJournal } from "@/shared/types/trad
 export interface MonthlyMetrics {
   greenDaysPercent: number;
   filledDays: number;
-  grayDays: number;
   greenDays: number;
   redDays: number;
   byPlanTrades: number;
   offPlanTrades: number;
-  longestDisciplineStreak: number;
+  greenStreak: number;
   byPlanWinrate: number;
   offPlanWinrate: number;
   avgByPlanRr: number;
@@ -45,24 +44,22 @@ const toMonthRecords = (journal: TradingJournal, monthDate: Date): DayRecord[] =
   });
 };
 
-const getLongestGreenStreak = (journal: TradingJournal, monthDate: Date): number => {
+const getCurrentGreenStreak = (journal: TradingJournal, monthDate: Date): number => {
   const daysInMonth = getDaysInMonth(monthDate);
-  let current = 0;
-  let max = 0;
+  let streak = 0;
 
   for (let day = 1; day <= daysInMonth; day += 1) {
     const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
     const key = formatDateKey(date);
     const status = getDayStatus(journal[key]);
     if (status === "green") {
-      current += 1;
-      max = Math.max(max, current);
+      streak += 1;
     } else {
-      current = 0;
+      streak = 0;
     }
   }
 
-  return max;
+  return streak;
 };
 
 const buildMotivation = (offPlanTrades: TradeRecord[], skippedTotalRr: number): string => {
@@ -80,7 +77,7 @@ const buildMotivation = (offPlanTrades: TradeRecord[], skippedTotalRr: number): 
     return `Некоторые пропущенные сетапы дали бы прибыль (+${skippedTotalRr} RR), но системность важнее разовых исходов.`;
   }
 
-  return "Стабильное следование плану создает устойчивый результат на дистанции.";
+  return "";
 };
 
 export const calculateMonthlyMetrics = (journal: TradingJournal, monthDate: Date): MonthlyMetrics => {
@@ -90,7 +87,6 @@ export const calculateMonthlyMetrics = (journal: TradingJournal, monthDate: Date
   const redDays = statuses.filter((status) => status === "red").length;
   const greenDays = statuses.filter((status) => status === "green").length;
   const filledDays = greenDays + redDays;
-  const grayDays = daysInMonth - filledDays;
 
   const trades = records.flatMap((record) => record.trades);
   const byPlanTrades = trades.filter((trade) => trade.byPlan);
@@ -112,12 +108,11 @@ export const calculateMonthlyMetrics = (journal: TradingJournal, monthDate: Date
   return {
     greenDaysPercent: filledDays > 0 ? round((greenDays / filledDays) * 100) : 0,
     filledDays,
-    grayDays,
     greenDays,
     redDays,
     byPlanTrades: byPlanTrades.length,
     offPlanTrades: offPlanTrades.length,
-    longestDisciplineStreak: getLongestGreenStreak(journal, monthDate),
+    greenStreak: getCurrentGreenStreak(journal, monthDate),
     byPlanWinrate: winrate(byPlanTrades),
     offPlanWinrate: winrate(offPlanTrades),
     avgByPlanRr: average(byPlanTrades.map((trade) => trade.rr)),

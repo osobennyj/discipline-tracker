@@ -14,7 +14,18 @@ export const parseDateKey = (key: string): Date => {
   return new Date(year, month - 1, day);
 };
 
+const toOrdinal = (value: number): string => {
+  const remTen = value % 10;
+  const remHundred = value % 100;
+  if (remTen === 1 && remHundred !== 11) return `${value}st`;
+  if (remTen === 2 && remHundred !== 12) return `${value}nd`;
+  if (remTen === 3 && remHundred !== 13) return `${value}rd`;
+  return `${value}th`;
+};
+
 export const getMonthStart = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), 1);
+
+export const getMonthEnd = (date: Date): Date => new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
 export const getDaysInMonth = (date: Date): number =>
   new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -36,7 +47,13 @@ export const isSameMonth = (left: Date, right: Date): boolean =>
   left.getFullYear() === right.getFullYear() && left.getMonth() === right.getMonth();
 
 export const getMonthLabel = (date: Date): string =>
-  date.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
+  date.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
+
+export const getDayTitleLabel = (dateKey: string): string => {
+  const date = parseDateKey(dateKey);
+  const month = date.toLocaleDateString("en-US", { month: "long" });
+  return `${month} ${toOrdinal(date.getDate())}`;
+};
 
 export const getWeekdayLabels = (): string[] => {
   const baseMonday = new Date(2024, 0, 1);

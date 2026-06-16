@@ -8,6 +8,7 @@ export const isDayFilled = (day?: DayRecord): boolean => {
   if (!day) return false;
 
   return (
+    Boolean(day.noTradeDay) ||
     day.trades.length > 0 ||
     day.skippedTrades.length > 0 ||
     (day.attachments?.length ?? 0) > 0 ||

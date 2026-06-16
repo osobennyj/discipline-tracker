@@ -8,6 +8,7 @@ interface SkipFormProps {
 }
 
 export const SkipForm = ({ onAddSkipped }: SkipFormProps) => {
+  const [asset, setAsset] = useState("");
   const [reason, setReason] = useState("");
   const [result, setResult] = useState<TradeResult>("lose");
   const [rr, setRr] = useState("-1");
@@ -16,18 +17,20 @@ export const SkipForm = ({ onAddSkipped }: SkipFormProps) => {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const parsedRr = Number(rr);
-    if (!reason.trim() || Number.isNaN(parsedRr)) {
+    if (!asset.trim() || !reason.trim() || Number.isNaN(parsedRr)) {
       return;
     }
 
     onAddSkipped({
       id: crypto.randomUUID(),
+      asset: asset.trim(),
       reason: reason.trim(),
       hypotheticalResult: result,
       hypotheticalRr: parsedRr,
       comment: comment.trim(),
     });
 
+    setAsset("");
     setReason("");
     setResult("lose");
     setRr("-1");
@@ -37,6 +40,10 @@ export const SkipForm = ({ onAddSkipped }: SkipFormProps) => {
   return (
     <form className="form" onSubmit={submit}>
       <h3>Добавить пропущенную сделку</h3>
+      <label>
+        Актив
+        <input value={asset} onChange={(event) => setAsset(event.target.value)} placeholder="BTCUSDT" required />
+      </label>
       <label>
         Причина отказа
         <input

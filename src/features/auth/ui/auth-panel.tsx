@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-import { loginUser, registerUser } from "@/entities/user/model/auth-storage";
+import { signIn, signUp } from "@/entities/user/api/auth-api";
 import type { UserAccount } from "@/shared/types/auth";
 
 interface AuthPanelProps {
@@ -17,8 +17,9 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
@@ -27,14 +28,16 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
       return;
     }
 
-    const result = mode === "login" ? loginUser(email, password) : registerUser(email, password);
-
-    if (result.error || !result.user) {
-      setError(result.error ?? "Ошибка авторизации.");
-      return;
+    try {
+      setIsSubmitting(true);
+      const user = mode === "login" ? await signIn(email, password) : await signUp(email, password);
+      onAuthenticated(user);
+    } catch (submitError) {
+      const message = submitError instanceof Error ? submitError.message : "Ошибка авторизации.";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    onAuthenticated(result.user);
   };
 
   return (
@@ -47,6 +50,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
           type="button"
           className={mode === "login" ? "auth-tabs__active" : ""}
           onClick={() => setMode("login")}
+          disabled={isSubmitting}
         >
           Логин
         </button>
@@ -54,6 +58,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
           type="button"
           className={mode === "register" ? "auth-tabs__active" : ""}
           onClick={() => setMode("register")}
+          disabled={isSubmitting}
         >
           Регистрация
         </button>
@@ -75,7 +80,9 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
           />
         </label>
         {error && <p className="auth-error">{error}</p>}
-        <button type="submit">{mode === "login" ? "Войти" : "Создать аккаунт"}</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Подождите..." : mode === "login" ? "Войти" : "Создать аккаунт"}
+        </button>
       </form>
     </section>
   );

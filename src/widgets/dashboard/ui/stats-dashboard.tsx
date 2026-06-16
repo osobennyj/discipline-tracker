@@ -14,40 +14,32 @@ export const StatsDashboard = ({ metrics }: StatsDashboardProps) => {
           <strong>{metrics.filledDays}</strong>
         </article>
         <article className="kpi-card">
-          <span className="kpi-card__label">Пустых (серых)</span>
-          <strong>{metrics.grayDays}</strong>
-        </article>
-        <article className="kpi-card">
           <span className="kpi-card__label">Дисциплина</span>
           <strong>{metrics.greenDaysPercent}%</strong>
         </article>
         <article className="kpi-card">
-          <span className="kpi-card__label">Серия по плану</span>
-          <strong>{metrics.longestDisciplineStreak} дн.</strong>
+          <span className="kpi-card__label">Green Стрик</span>
+          <strong>{metrics.greenStreak} дн.</strong>
         </article>
       </div>
 
       <div className="dashboard__grid">
         <article className="dashboard-card">
           <h3>Сделки</h3>
-          <p>По плану: {metrics.byPlanTrades}</p>
-          <p>Вне плана: {metrics.offPlanTrades}</p>
-          <p>Winrate по плану: {metrics.byPlanWinrate}%</p>
-          <p>Winrate вне плана: {metrics.offPlanWinrate}%</p>
+          <p>По плану / Winrate: {metrics.byPlanTrades} / {metrics.byPlanWinrate}%</p>
+          <p>Вне плана / Winrate: {metrics.offPlanTrades} / {metrics.offPlanWinrate}%</p>
         </article>
         <article className="dashboard-card">
           <h3>RR аналитика</h3>
-          <p>Средний RR по плану: {metrics.avgByPlanRr}</p>
-          <p>Средний RR вне плана: {metrics.avgOffPlanRr}</p>
-          <p>Пропущенные win/lose: {metrics.skippedWins}/{metrics.skippedLosses}</p>
-          <p>Суммарный RR пропусков: {metrics.skippedTotalRr}</p>
+          <p>По плану RR / Пропуски W/L: {metrics.avgByPlanRr} / {metrics.skippedWins}/{metrics.skippedLosses}</p>
+          <p>Вне плана RR / Пропуски RR: {metrics.avgOffPlanRr} / {metrics.skippedTotalRr}</p>
         </article>
-        <article className="dashboard-card">
+        <article className="dashboard-card dashboard-card--center">
           <h3>Вывод по пропускам</h3>
           <p>{metrics.skippedOutcomeText}</p>
         </article>
       </div>
-      <p className="dashboard__motivation">{metrics.motivation}</p>
+      {metrics.motivation && <p className="dashboard__motivation">{metrics.motivation}</p>}
     </section>
   );
 };
