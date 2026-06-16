@@ -26,13 +26,13 @@ export const StatsDashboard = ({ metrics }: StatsDashboardProps) => {
       <div className="dashboard__grid">
         <article className="dashboard-card">
           <h3>Сделки</h3>
-          <p>По плану / Winrate: {metrics.byPlanTrades} / {metrics.byPlanWinrate}%</p>
-          <p>Вне плана / Winrate: {metrics.offPlanTrades} / {metrics.offPlanWinrate}%</p>
+          <p>По плану: {metrics.byPlanTrades} / Winrate: {metrics.byPlanWinrate}%</p>
+          <p>Вне плана: {metrics.offPlanTrades} / Winrate: {metrics.offPlanWinrate}%</p>
         </article>
         <article className="dashboard-card">
           <h3>RR аналитика</h3>
-          <p>По плану RR / Пропуски W/L: {metrics.avgByPlanRr} / {metrics.skippedWins}/{metrics.skippedLosses}</p>
-          <p>Вне плана RR / Пропуски RR: {metrics.avgOffPlanRr} / {metrics.skippedTotalRr}</p>
+          <p>По плану RR: {metrics.avgByPlanRr} / Пропуски W/L: {metrics.skippedWins}/{metrics.skippedLosses}</p>
+          <p>Вне плана RR: {metrics.avgOffPlanRr} / Пропуски RR: {metrics.skippedTotalRr}</p>
         </article>
         <article className="dashboard-card dashboard-card--center">
           <h3>Вывод по пропускам</h3>

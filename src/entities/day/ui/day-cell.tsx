@@ -19,6 +19,7 @@ export const DayCell = ({
 }: DayCellProps) => {
   const dateKey = formatDateKey(date);
   const status = getDayStatus(dayRecord);
+  const hasActivity = Boolean(dayRecord && (dayRecord.trades.length > 0 || dayRecord.skippedTrades.length > 0));
 
   const baseClass = "day-cell";
   const monthClass = isCurrentMonth ? "" : "day-cell--faded";
@@ -34,7 +35,7 @@ export const DayCell = ({
       aria-label={`День ${date.getDate()}, статус ${status}`}
     >
       <span className="day-cell__number">{date.getDate()}</span>
-      {dayRecord && (
+      {hasActivity && dayRecord && (
         <span className="day-cell__meta">
           {dayRecord.trades.length} / {dayRecord.skippedTrades.length}
         </span>
