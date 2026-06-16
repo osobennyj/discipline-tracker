@@ -317,6 +317,15 @@ body {
   height: 20px;
 }
 
+.details__clear-day {
+  border-color: color-mix(in srgb, #d35b68 55%, var(--border));
+  color: #ffdbe0;
+}
+
+.details__clear-day:hover {
+  border-color: #d35b68;
+}
+
 .details__forms {
   display: grid;
   gap: 12px;

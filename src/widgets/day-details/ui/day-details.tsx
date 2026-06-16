@@ -21,6 +21,7 @@ interface DayDetailsProps {
   onToggleNoTradeDay: (checked: boolean) => void;
   onAddAttachments: (files: File[]) => void;
   onRemoveAttachment: (attachmentId: string) => void;
+  onClearDay: () => void;
 }
 
 const moodOptions: Array<{ value: MoodTag; label: string }> = [
@@ -51,6 +52,7 @@ export const DayDetails = ({
   onToggleNoTradeDay,
   onAddAttachments,
   onRemoveAttachment,
+  onClearDay,
 }: DayDetailsProps) => {
   const [previewAttachment, setPreviewAttachment] = useState<DayAttachment | null>(null);
   const [tradeDraft, setTradeDraft] = useState<TradeRecord | null>(null);
@@ -149,6 +151,17 @@ export const DayDetails = ({
             />
             <span>День без сделок</span>
           </label>
+          <button
+            type="button"
+            className="details__clear-day"
+            onClick={() => {
+              if (window.confirm("Очистить весь день? Это удалит сделки, пропуски, скриншоты и заметки.")) {
+                onClearDay();
+              }
+            }}
+          >
+            Очистить день
+          </button>
         </div>
       </div>
 

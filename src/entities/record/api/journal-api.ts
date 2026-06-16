@@ -399,3 +399,44 @@ export const removeDayAttachment = async (attachment: DayAttachment): Promise<vo
   const { error: removeDbError } = await supabase.from("day_attachments").delete().eq("id", attachment.id);
   if (removeDbError) throw new Error(removeDbError.message);
 };
+
+export const clearDay = async (userId: string, date: string): Promise<void> => {
+  assertSupabaseConfigured();
+
+  const { data: day, error: dayError } = await supabase
+    .from("days")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("date", date)
+    .maybeSingle();
+  if (dayError) throw new Error(dayError.message);
+  if (!day?.id) return;
+
+  const dayId = day.id as string;
+
+  const { data: attachmentRows, error: attachmentRowsError } = await supabase
+    .from("day_attachments")
+    .select("file_path")
+    .eq("day_id", dayId)
+    .eq("user_id", userId);
+  if (attachmentRowsError) throw new Error(attachmentRowsError.message);
+
+  const attachmentPaths = ((attachmentRows ?? []) as Array<{ file_path: string }>).map((item) => item.file_path);
+  if (attachmentPaths.length > 0) {
+    const { error: removeStorageError } = await supabase.storage.from("trade-screenshots").remove(attachmentPaths);
+    if (removeStorageError) throw new Error(removeStorageError.message);
+  }
+
+  const [{ error: removeAttachmentsError }, { error: removeTradesError }, { error: removeSkippedError }] = await Promise.all([
+    supabase.from("day_attachments").delete().eq("day_id", dayId).eq("user_id", userId),
+    supabase.from("trades").delete().eq("day_id", dayId).eq("user_id", userId),
+    supabase.from("skipped_trades").delete().eq("day_id", dayId).eq("user_id", userId),
+  ]);
+
+  if (removeAttachmentsError) throw new Error(removeAttachmentsError.message);
+  if (removeTradesError) throw new Error(removeTradesError.message);
+  if (removeSkippedError) throw new Error(removeSkippedError.message);
+
+  const { error: removeDayError } = await supabase.from("days").delete().eq("id", dayId).eq("user_id", userId);
+  if (removeDayError) throw new Error(removeDayError.message);
+};

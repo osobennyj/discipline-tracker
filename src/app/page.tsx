@@ -6,6 +6,7 @@ import {
   addDayAttachment,
   addSkippedTrade,
   addTrade,
+  clearDay,
   deleteSkippedTrade,
   deleteTrade,
   fetchJournalForMonth,
@@ -313,6 +314,22 @@ export default function HomePage() {
     }
   };
 
+  const clearSelectedDay = async () => {
+    try {
+      setError("");
+      await clearDay(user.id, selectedDateKey);
+      setUndoAction(null);
+      setJournal((previous) => {
+        const next = { ...previous };
+        delete next[selectedDateKey];
+        return next;
+      });
+    } catch (clearError) {
+      const message = clearError instanceof Error ? clearError.message : "Ошибка очистки дня.";
+      setError(message);
+    }
+  };
+
   const goToPreviousMonth = () =>
     setMonthDate((previous) => new Date(previous.getFullYear(), previous.getMonth() - 1, 1));
 
@@ -390,6 +407,7 @@ export default function HomePage() {
         onToggleNoTradeDay={toggleNoTradeDay}
         onAddAttachments={addAttachments}
         onRemoveAttachment={removeAttachment}
+        onClearDay={clearSelectedDay}
       />
     </main>
   );
