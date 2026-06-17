@@ -67,10 +67,7 @@ export const DayDetails = ({
   const dayLosses = dayTradeCount - dayWins;
   const dayByPlan = dayRecord.trades.filter((trade) => trade.byPlan).length;
   const dayOffPlan = dayTradeCount - dayByPlan;
-  const dayAvgRr =
-    dayTradeCount > 0
-      ? (dayRecord.trades.reduce((sum, trade) => sum + trade.rr, 0) / dayTradeCount).toFixed(2)
-      : "0.00";
+  const dayTotalRr = dayRecord.trades.reduce((sum, trade) => sum + trade.rr, 0).toFixed(2);
   const skippedCount = dayRecord.skippedTrades.length;
   const skippedTotalRr = dayRecord.skippedTrades.reduce((sum, item) => sum + item.hypotheticalRr, 0).toFixed(2);
 
@@ -327,10 +324,7 @@ export const DayDetails = ({
       <div className="details__bottom">
         <article className="attachments">
           <h3>Скриншоты дня</h3>
-          <label>
-            Прикрепить изображения
-            <input type="file" accept="image/*" multiple onChange={handleAttach} />
-          </label>
+          <input type="file" accept="image/*" multiple onChange={handleAttach} aria-label="Прикрепить изображения" />
           <div className="attachments__grid">
             {dayRecord.attachments.map((attachment) => (
               <figure key={attachment.id} className="attachments__item">
@@ -359,7 +353,7 @@ export const DayDetails = ({
           <h3>Инфо по сделкам дня</h3>
           <p>W/L: {dayWins}/{dayLosses}</p>
           <p>По плану / Вне плана: {dayByPlan} / {dayOffPlan}</p>
-          <p>Avg. RR: {dayAvgRr}</p>
+          <p>RR: {dayTotalRr}</p>
           <p>Пропущенные сделки / RR: {skippedCount} / {skippedTotalRr}</p>
 
           <div className="day-info__list">

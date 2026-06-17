@@ -115,6 +115,10 @@ body {
   padding: 16px;
 }
 
+.dashboard > h2 {
+  margin: 0 0 6px;
+}
+
 .dashboard__kpis {
   display: grid;
   gap: 10px;
@@ -258,6 +262,10 @@ body {
   gap: 12px;
 }
 
+.details > h2 {
+  margin: 0;
+}
+
 .details__divider {
   height: 1px;
   width: 100%;
@@ -367,6 +375,10 @@ body {
   background: var(--attachments-bg);
 }
 
+.attachments > h3 {
+  margin: 0 0 6px;
+}
+
 .attachments__grid {
   margin-top: 8px;
   display: grid;
@@ -433,7 +445,7 @@ body {
 }
 
 .day-info h3 {
-  margin: 0 0 2px;
+  margin: 0 0 6px;
 }
 
 .day-info p {
@@ -474,6 +486,10 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;
+}
+
+.form > h3 {
+  margin: 0;
 }
 
 label {
