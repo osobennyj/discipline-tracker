@@ -24,7 +24,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
     setError("");
 
     if (!email.trim() || password.length < 4) {
-      setError("Введите email и пароль не короче 4 символов.");
+      setError("Enter an email and a password with at least 4 characters.");
       return;
     }
 
@@ -33,7 +33,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
       const user = mode === "login" ? await signIn(email, password) : await signUp(email, password);
       onAuthenticated(user);
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Ошибка авторизации.";
+      const message = submitError instanceof Error ? submitError.message : "Authentication failed.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -43,7 +43,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
   return (
     <section className="auth-panel">
       <h1>Trading Discipline Calendar</h1>
-      <p className="subtitle">Войди в аккаунт, чтобы вести персональный календарь дисциплины.</p>
+      <p className="subtitle">Sign in to keep your personal discipline journal.</p>
 
       <div className="auth-tabs">
         <button
@@ -52,7 +52,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
           onClick={() => setMode("login")}
           disabled={isSubmitting}
         >
-          Логин
+          Login
         </button>
         <button
           type="button"
@@ -60,7 +60,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
           onClick={() => setMode("register")}
           disabled={isSubmitting}
         >
-          Регистрация
+          Register
         </button>
       </div>
 
@@ -70,7 +70,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
           <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
         </label>
         <label>
-          Пароль
+          Password
           <input
             type="password"
             value={password}
@@ -81,7 +81,7 @@ export const AuthPanel = ({ onAuthenticated }: AuthPanelProps) => {
         </label>
         {error && <p className="auth-error">{error}</p>}
         <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Подождите..." : mode === "login" ? "Войти" : "Создать аккаунт"}
+          {isSubmitting ? "Please wait..." : mode === "login" ? "Sign In" : "Create Account"}
         </button>
       </form>
     </section>

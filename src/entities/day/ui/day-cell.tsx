@@ -32,7 +32,7 @@ export const DayCell = ({
       type="button"
       className={[baseClass, monthClass, selectedClass, statusClassName].filter(Boolean).join(" ")}
       onClick={() => onSelect(dateKey)}
-      aria-label={`День ${date.getDate()}, статус ${status}`}
+      aria-label={`Day ${date.getDate()}, status ${status}`}
     >
       <span className="day-cell__number">{date.getDate()}</span>
       {hasActivity && dayRecord && (

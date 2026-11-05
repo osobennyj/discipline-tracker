@@ -10,7 +10,6 @@ import {
   deleteSkippedTrade,
   deleteTrade,
   fetchJournalForMonth,
-  removeDayAttachment,
   restoreSkippedTrade,
   restoreTrade,
   saveDayMeta,
@@ -21,7 +20,7 @@ import { calculateMonthlyMetrics } from "@/entities/record/model/metrics";
 import { getCurrentUser, signOut } from "@/entities/user/api/auth-api";
 import { formatDateKey } from "@/shared/lib/date";
 import type { UserAccount } from "@/shared/types/auth";
-import type { DayAttachment, DayRecord, MoodTag, SkippedTradeRecord, TradeRecord, TradingJournal } from "@/shared/types/trading";
+import type { DayRecord, MoodTag, SkippedTradeRecord, TradeRecord, TradingJournal } from "@/shared/types/trading";
 import { AuthPanel } from "@/features/auth/ui/auth-panel";
 import { DisciplineCalendar } from "@/widgets/calendar/ui/discipline-calendar";
 import { DayDetails } from "@/widgets/day-details/ui/day-details";
@@ -52,7 +51,6 @@ const getDay = (journal: TradingJournal, dateKey: string): DayRecord => {
 };
 
 export default function HomePage() {
-  type ThemeMode = "midnight" | "graphite";
   const now = useMemo(() => new Date(), []);
   const [monthDate, setMonthDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [selectedDateKey, setSelectedDateKey] = useState(formatDateKey(now));
@@ -61,11 +59,6 @@ export default function HomePage() {
   const [isBootLoading, setIsBootLoading] = useState(true);
   const [isMonthLoading, setIsMonthLoading] = useState(false);
   const [error, setError] = useState("");
-  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
-    if (typeof window === "undefined") return "midnight";
-    const storedTheme = window.localStorage.getItem("tdc_theme");
-    return storedTheme === "graphite" ? "graphite" : "midnight";
-  });
   const [undoAction, setUndoAction] = useState<
     | { kind: "trade"; payload: TradeRecord; dateKey: string }
     | { kind: "skipped"; payload: SkippedTradeRecord; dateKey: string }
@@ -73,9 +66,9 @@ export default function HomePage() {
   >(null);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = themeMode;
-    window.localStorage.setItem("tdc_theme", themeMode);
-  }, [themeMode]);
+    document.documentElement.dataset.theme = "graphite";
+    window.localStorage.setItem("tdc_theme", "graphite");
+  }, []);
 
   useEffect(() => {
     const loadSession = async () => {
@@ -83,7 +76,7 @@ export default function HomePage() {
         const currentUser = await getCurrentUser();
         setUser(currentUser);
       } catch (sessionError) {
-        const message = sessionError instanceof Error ? sessionError.message : "Ошибка загрузки сессии.";
+        const message = sessionError instanceof Error ? sessionError.message : "Failed to load session.";
         setError(message);
       } finally {
         setIsBootLoading(false);
@@ -101,7 +94,7 @@ export default function HomePage() {
         const next = await fetchJournalForMonth(user.id, monthDate);
         setJournal(next);
       } catch (journalError) {
-        const message = journalError instanceof Error ? journalError.message : "Ошибка загрузки данных.";
+        const message = journalError instanceof Error ? journalError.message : "Failed to load data.";
         setError(message);
       } finally {
         setIsMonthLoading(false);
@@ -123,7 +116,7 @@ export default function HomePage() {
   if (isBootLoading) {
     return (
       <main className="page">
-        <p>Загрузка...</p>
+        <p>Loading...</p>
       </main>
     );
   }
@@ -148,7 +141,7 @@ export default function HomePage() {
         },
       }));
     } catch (commentError) {
-      const message = commentError instanceof Error ? commentError.message : "Ошибка сохранения комментария.";
+      const message = commentError instanceof Error ? commentError.message : "Failed to save comment.";
       setError(message);
     }
   };
@@ -169,7 +162,7 @@ export default function HomePage() {
         },
       }));
     } catch (moodError) {
-      const message = moodError instanceof Error ? moodError.message : "Ошибка сохранения состояния.";
+      const message = moodError instanceof Error ? moodError.message : "Failed to save mood.";
       setError(message);
     }
   };
@@ -180,7 +173,7 @@ export default function HomePage() {
       await addTrade(user.id, selectedDateKey, trade);
       await refreshMonth();
     } catch (tradeError) {
-      const message = tradeError instanceof Error ? tradeError.message : "Ошибка сохранения сделки.";
+      const message = tradeError instanceof Error ? tradeError.message : "Failed to save trade.";
       setError(message);
     }
   };
@@ -191,7 +184,7 @@ export default function HomePage() {
       await updateTrade(user.id, trade);
       await refreshMonth();
     } catch (tradeError) {
-      const message = tradeError instanceof Error ? tradeError.message : "Ошибка обновления сделки.";
+      const message = tradeError instanceof Error ? tradeError.message : "Failed to update trade.";
       setError(message);
     }
   };
@@ -207,7 +200,7 @@ export default function HomePage() {
       });
       await refreshMonth();
     } catch (tradeError) {
-      const message = tradeError instanceof Error ? tradeError.message : "Ошибка удаления сделки.";
+      const message = tradeError instanceof Error ? tradeError.message : "Failed to delete trade.";
       setError(message);
     }
   };
@@ -228,7 +221,7 @@ export default function HomePage() {
         },
       }));
     } catch (toggleError) {
-      const message = toggleError instanceof Error ? toggleError.message : "Ошибка изменения статуса дня без сделок.";
+      const message = toggleError instanceof Error ? toggleError.message : "Failed to update no-trade day status.";
       setError(message);
     }
   };
@@ -239,7 +232,7 @@ export default function HomePage() {
       await addSkippedTrade(user.id, selectedDateKey, record);
       await refreshMonth();
     } catch (skippedError) {
-      const message = skippedError instanceof Error ? skippedError.message : "Ошибка сохранения пропущенной сделки.";
+      const message = skippedError instanceof Error ? skippedError.message : "Failed to save skipped trade.";
       setError(message);
     }
   };
@@ -250,7 +243,7 @@ export default function HomePage() {
       await updateSkippedTrade(user.id, record);
       await refreshMonth();
     } catch (skippedError) {
-      const message = skippedError instanceof Error ? skippedError.message : "Ошибка обновления пропущенной сделки.";
+      const message = skippedError instanceof Error ? skippedError.message : "Failed to update skipped trade.";
       setError(message);
     }
   };
@@ -266,7 +259,7 @@ export default function HomePage() {
       });
       await refreshMonth();
     } catch (skippedError) {
-      const message = skippedError instanceof Error ? skippedError.message : "Ошибка удаления пропущенной сделки.";
+      const message = skippedError instanceof Error ? skippedError.message : "Failed to delete skipped trade.";
       setError(message);
     }
   };
@@ -284,7 +277,7 @@ export default function HomePage() {
       setUndoAction(null);
       await refreshMonth();
     } catch (undoError) {
-      const message = undoError instanceof Error ? undoError.message : "Ошибка восстановления удаленной записи.";
+      const message = undoError instanceof Error ? undoError.message : "Failed to restore deleted entry.";
       setError(message);
     }
   };
@@ -295,21 +288,7 @@ export default function HomePage() {
       await Promise.all(files.map((file) => addDayAttachment(user.id, selectedDateKey, file)));
       await refreshMonth();
     } catch (attachmentError) {
-      const message = attachmentError instanceof Error ? attachmentError.message : "Ошибка загрузки скриншотов.";
-      setError(message);
-    }
-  };
-
-  const removeAttachment = async (attachmentId: string) => {
-    const attachment = selectedDay.attachments.find((item) => item.id === attachmentId);
-    if (!attachment) return;
-
-    try {
-      setError("");
-      await removeDayAttachment(attachment);
-      await refreshMonth();
-    } catch (removeError) {
-      const message = removeError instanceof Error ? removeError.message : "Ошибка удаления скриншота.";
+      const message = attachmentError instanceof Error ? attachmentError.message : "Failed to upload screenshots.";
       setError(message);
     }
   };
@@ -325,7 +304,7 @@ export default function HomePage() {
         return next;
       });
     } catch (clearError) {
-      const message = clearError instanceof Error ? clearError.message : "Ошибка очистки дня.";
+      const message = clearError instanceof Error ? clearError.message : "Failed to clear day.";
       setError(message);
     }
   };
@@ -340,44 +319,37 @@ export default function HomePage() {
     <main className="page">
       <header className="page__header">
         <div>
-          <h1>Trading Discipline Calendar</h1>
-          {isMonthLoading && <p className="subtitle">Обновляю данные...</p>}
+          {isMonthLoading && <p className="subtitle">Updating data...</p>}
           {error && <p className="auth-error">{error}</p>}
         </div>
         <div className="page__actions">
-          <label className="theme-switcher">
-            Тема
-            <select value={themeMode} onChange={(event) => setThemeMode(event.target.value as ThemeMode)}>
-              <option value="midnight">Midnight</option>
-              <option value="graphite">Graphite</option>
-            </select>
-          </label>
           <button
             type="button"
+            className="page__signout"
             onClick={async () => {
               try {
                 await signOut();
                 setUser(null);
                 setJournal({});
               } catch (signOutError) {
-                const message = signOutError instanceof Error ? signOutError.message : "Ошибка выхода из аккаунта.";
+                const message = signOutError instanceof Error ? signOutError.message : "Failed to sign out.";
                 setError(message);
               }
             }}
           >
-            Выйти
+            Sign Out
           </button>
         </div>
       </header>
 
       {undoAction && (
         <div className="undo-bar">
-          <span>Запись удалена.</span>
-          <button type="button" onClick={undoDelete}>
+          <span>Entry deleted.</span>
+          <button type="button" className="undo-bar__action" onClick={undoDelete}>
             Undo
           </button>
-          <button type="button" onClick={() => setUndoAction(null)}>
-            Закрыть
+          <button type="button" className="undo-bar__dismiss" onClick={() => setUndoAction(null)}>
+            Close
           </button>
         </div>
       )}
@@ -406,7 +378,6 @@ export default function HomePage() {
         onUpdateMood={updateMood}
         onToggleNoTradeDay={toggleNoTradeDay}
         onAddAttachments={addAttachments}
-        onRemoveAttachment={removeAttachment}
         onClearDay={clearSelectedDay}
       />
     </main>

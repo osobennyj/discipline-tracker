@@ -55,7 +55,7 @@ export const DisciplineCalendar = ({
           );
         })}
       </div>
-      <p className="calendar__legend">Формат под датой: сделки / пропуски</p>
+      <p className="calendar__legend">Format below each date: trades / skips</p>
     </section>
   );
 };

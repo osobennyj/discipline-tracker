@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 
 import type { SkippedTradeRecord, TradeResult } from "@/shared/types/trading";
 
 interface SkipFormProps {
   onAddSkipped: (record: SkippedTradeRecord) => void;
+  onAddAttachments?: (files: File[]) => void;
 }
 
-export const SkipForm = ({ onAddSkipped }: SkipFormProps) => {
+export const SkipForm = ({ onAddSkipped, onAddAttachments }: SkipFormProps) => {
   const [asset, setAsset] = useState("");
   const [reason, setReason] = useState("");
   const [result, setResult] = useState<TradeResult>("lose");
   const [rr, setRr] = useState("-1");
   const [comment, setComment] = useState("");
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const attachmentsInputRef = useRef<HTMLInputElement | null>(null);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,46 +32,63 @@ export const SkipForm = ({ onAddSkipped }: SkipFormProps) => {
       hypotheticalRr: parsedRr,
       comment: comment.trim(),
     });
+    if (attachments.length) {
+      onAddAttachments?.(attachments);
+    }
 
     setAsset("");
     setReason("");
     setResult("lose");
     setRr("-1");
     setComment("");
+    setAttachments([]);
+    if (attachmentsInputRef.current) {
+      attachmentsInputRef.current.value = "";
+    }
   };
 
   return (
     <form className="form" onSubmit={submit}>
-      <h3>Добавить пропущенную сделку</h3>
+      <h3>Add Skipped Trade</h3>
       <label>
-        Актив
-        <input value={asset} onChange={(event) => setAsset(event.target.value)} placeholder="BTCUSDT" required />
+        Asset
+        <input value={asset} onChange={(event) => setAsset(event.target.value)} placeholder="BTC" required />
       </label>
       <label>
-        Причина отказа
+        Skip Reason
         <input
           value={reason}
           onChange={(event) => setReason(event.target.value)}
-          placeholder="Не по правилам стратегии"
+          placeholder="Not aligned with strategy rules"
           required
         />
       </label>
       <label>
-        Гипотетический исход
+        Hypothetical Result
         <select value={result} onChange={(event) => setResult(event.target.value as TradeResult)}>
           <option value="win">Win</option>
           <option value="lose">Lose</option>
         </select>
       </label>
       <label>
-        Гипотетический RR
+        Hypothetical RR
         <input type="number" step="0.1" value={rr} onChange={(event) => setRr(event.target.value)} required />
       </label>
       <label>
-        Комментарий
+        Comment
         <textarea value={comment} onChange={(event) => setComment(event.target.value)} rows={2} />
       </label>
-      <button type="submit">Сохранить пропуск</button>
+      <label>
+        Trade Screenshots (optional)
+        <input
+          ref={attachmentsInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(event) => setAttachments(Array.from(event.target.files ?? []))}
+        />
+      </label>
+      <button type="submit">Save Skip</button>
     </form>
   );
 };

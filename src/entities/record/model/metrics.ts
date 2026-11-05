@@ -17,8 +17,8 @@ export interface MonthlyMetrics {
   skippedWins: number;
   skippedLosses: number;
   skippedTotalRr: number;
-  skippedOutcomeText: string;
-  motivation: string;
+  bestAsset: { ticker: string; rr: number } | null;
+  worstAsset: { ticker: string; rr: number } | null;
 }
 
 const round = (value: number): number => Math.round(value * 100) / 100;
@@ -32,6 +32,16 @@ const winrate = (trades: TradeRecord[]): number => {
   if (!trades.length) return 0;
   const wins = trades.filter((trade) => trade.result === "win").length;
   return round((wins / trades.length) * 100);
+};
+
+const toAssetTicker = (asset: string): string => {
+  const upper = asset.trim().toUpperCase();
+  if (!upper) return "";
+  const [rawTicker] = upper.split(/[\/\s-]/);
+  if (rawTicker.endsWith("USDT") && rawTicker.length > 4) {
+    return rawTicker.slice(0, -4);
+  }
+  return rawTicker;
 };
 
 const toMonthRecords = (journal: TradingJournal, monthDate: Date): DayRecord[] => {
@@ -74,24 +84,6 @@ const getCurrentGreenStreak = (journal: TradingJournal, monthDate: Date): number
   return streak;
 };
 
-const buildMotivation = (offPlanTrades: TradeRecord[], skippedTotalRr: number): string => {
-  const offPlanLosses = offPlanTrades.filter((trade) => trade.result === "lose").length;
-
-  if (offPlanLosses > 0) {
-    return `В этом месяце нарушения плана дали ${offPlanLosses} убыточных входов. Дисциплина защищает капитал.`;
-  }
-
-  if (skippedTotalRr < 0) {
-    return `Пропуская невалидные сетапы, ты избежал примерно ${Math.abs(skippedTotalRr)} RR убытка.`;
-  }
-
-  if (skippedTotalRr > 0) {
-    return `Некоторые пропущенные сетапы дали бы прибыль (+${skippedTotalRr} RR), но системность важнее разовых исходов.`;
-  }
-
-  return "";
-};
-
 export const calculateMonthlyMetrics = (journal: TradingJournal, monthDate: Date): MonthlyMetrics => {
   const records = toMonthRecords(journal, monthDate);
   const daysInMonth = getDaysInMonth(monthDate);
@@ -103,19 +95,25 @@ export const calculateMonthlyMetrics = (journal: TradingJournal, monthDate: Date
   const trades = records.flatMap((record) => record.trades);
   const byPlanTrades = trades.filter((trade) => trade.byPlan);
   const offPlanTrades = trades.filter((trade) => !trade.byPlan);
+  const assetRrMap = new Map<string, number>();
+
+  trades.forEach((trade) => {
+    const ticker = toAssetTicker(trade.asset);
+    if (!ticker) return;
+    const signedRr = trade.result === "win" ? Math.abs(trade.rr) : -Math.abs(trade.rr);
+    assetRrMap.set(ticker, round((assetRrMap.get(ticker) ?? 0) + signedRr));
+  });
+
+  const assetStats = Array.from(assetRrMap.entries())
+    .map(([ticker, rr]) => ({ ticker, rr }))
+    .sort((a, b) => b.rr - a.rr);
+  const bestAsset = assetStats[0] ?? null;
+  const worstAsset = assetStats.length > 0 ? assetStats[assetStats.length - 1] : null;
 
   const skipped = records.flatMap((record) => record.skippedTrades);
   const skippedWins = skipped.filter((item) => item.hypotheticalResult === "win").length;
   const skippedLosses = skipped.filter((item) => item.hypotheticalResult === "lose").length;
   const skippedTotalRr = round(skipped.reduce((sum, item) => sum + item.hypotheticalRr, 0));
-
-  let skippedOutcomeText = "Пропущенные невалидные входы в сумме дали нейтральный результат.";
-  if (skippedTotalRr > 0) {
-    skippedOutcomeText = `Пропущенные невалидные входы в сумме дали бы прибыль: +${skippedTotalRr} RR.`;
-  }
-  if (skippedTotalRr < 0) {
-    skippedOutcomeText = `Пропущенные невалидные входы в сумме дали бы убыток: ${skippedTotalRr} RR.`;
-  }
 
   return {
     greenDaysPercent: filledDays > 0 ? round((greenDays / filledDays) * 100) : 0,
@@ -132,7 +130,7 @@ export const calculateMonthlyMetrics = (journal: TradingJournal, monthDate: Date
     skippedWins,
     skippedLosses,
     skippedTotalRr,
-    skippedOutcomeText,
-    motivation: buildMotivation(offPlanTrades, skippedTotalRr),
+    bestAsset,
+    worstAsset,
   };
 };

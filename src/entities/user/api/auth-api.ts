@@ -29,7 +29,7 @@ export const signUp = async (email: string, password: string): Promise<UserAccou
 
   const user = data.user;
   if (!user) {
-    throw new Error("Пользователь не создан. Проверь подтверждение email в настройках Supabase.");
+    throw new Error("User was not created. Check email confirmation settings in Supabase.");
   }
 
   return {
@@ -47,7 +47,7 @@ export const signIn = async (email: string, password: string): Promise<UserAccou
   if (error) throw new Error(error.message);
 
   if (!data.user) {
-    throw new Error("Не удалось получить пользователя.");
+    throw new Error("Failed to fetch user.");
   }
 
   return {

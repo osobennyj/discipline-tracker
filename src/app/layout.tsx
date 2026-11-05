@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "Trading Discipline Calendar",
-  description: "Календарь дисциплины трейдера",
+  description: "Trader discipline calendar",
 };
 
 interface RootLayoutProps {
