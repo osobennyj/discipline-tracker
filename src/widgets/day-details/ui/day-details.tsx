@@ -2,7 +2,7 @@ import { TradeForm } from "@/features/trade-entry/ui/trade-form";
 import { SkipForm } from "@/features/skip-entry/ui/skip-form";
 import { useEffect, useRef, useState } from "react";
 
-import { getDayTitleLabel } from "@/shared/lib/date";
+import { getDayTitleLabel, getDayWeekdayLabel } from "@/shared/lib/date";
 import type { DayRecord, MoodTag, PositionType, SkippedTradeRecord, TradeRecord, TradeResult, ViolationTag } from "@/shared/types/trading";
 
 interface DayDetailsProps {
@@ -51,6 +51,31 @@ const toAssetDisplayLabel = (asset: string): string => {
   return ticker;
 };
 
+const KEY_MISTAKE_MARKER = "[[KEY_MISTAKE]]";
+
+const parseDayNotes = (raw: string): { comment: string; keyMistake: string } => {
+  const markerIndex = raw.indexOf(KEY_MISTAKE_MARKER);
+  if (markerIndex === -1) {
+    return { comment: raw, keyMistake: "" };
+  }
+
+  const comment = raw.slice(0, markerIndex).trimEnd();
+  const keyMistake = raw.slice(markerIndex + KEY_MISTAKE_MARKER.length).trim();
+  return { comment, keyMistake };
+};
+
+const composeDayNotes = (comment: string, keyMistake: string): string => {
+  const cleanComment = comment.trimEnd();
+  const cleanKeyMistake = keyMistake.trim();
+  if (!cleanKeyMistake) {
+    return cleanComment;
+  }
+  if (!cleanComment) {
+    return `${KEY_MISTAKE_MARKER} ${cleanKeyMistake}`;
+  }
+  return `${cleanComment}\n\n${KEY_MISTAKE_MARKER} ${cleanKeyMistake}`;
+};
+
 export const DayDetails = ({
   dayRecord,
   onAddTrade,
@@ -65,16 +90,20 @@ export const DayDetails = ({
   onAddAttachments,
   onClearDay,
 }: DayDetailsProps) => {
+  const parsedNotes = parseDayNotes(dayRecord.comment);
   const [tradeDraft, setTradeDraft] = useState<TradeRecord | null>(null);
   const [skippedDraft, setSkippedDraft] = useState<SkippedTradeRecord | null>(null);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   const [isSkippedModalOpen, setIsSkippedModalOpen] = useState(false);
-  const [commentDraft, setCommentDraft] = useState(dayRecord.comment);
+  const [commentDraft, setCommentDraft] = useState(parsedNotes.comment);
+  const [keyMistakeDraft, setKeyMistakeDraft] = useState(parsedNotes.keyMistake);
   const [moodDraft, setMoodDraft] = useState<MoodTag | "">(dayRecord.mood ?? "");
   const commentDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const moodDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const commentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const dayTitle = getDayTitleLabel(dayRecord.date);
+  const dayWeekday = getDayWeekdayLabel(dayRecord.date);
+  const dayFocusText = `${dayTitle} • ${dayWeekday}`;
   const dayTradeCount = dayRecord.trades.length;
   const dayWins = dayRecord.trades.filter((trade) => trade.result === "win").length;
   const dayLosses = dayTradeCount - dayWins;
@@ -129,21 +158,42 @@ export const DayDetails = ({
     textarea.style.height = `${Math.max(92, textarea.scrollHeight)}px`;
   }, [commentDraft]);
 
+  const scheduleDayNoteSave = (nextComment: string, nextKeyMistake: string) => {
+    if (commentDebounceRef.current) {
+      clearTimeout(commentDebounceRef.current);
+    }
+    commentDebounceRef.current = setTimeout(() => {
+      onUpdateComment(composeDayNotes(nextComment, nextKeyMistake));
+    }, 450);
+  };
+
   return (
     <section className="details">
       <div className="details__header">
-        <h2>{dayTitle}</h2>
-        <button
-          type="button"
-          className="details__clear-day"
-          onClick={() => {
-            if (window.confirm("Clear this day? This will remove trades, skips, screenshots, and notes.")) {
-              onClearDay();
-            }
-          }}
-        >
-          Clear Day
-        </button>
+        <div className="details__date-focus">
+          <h2>{dayFocusText}</h2>
+        </div>
+        <div className="details__header-actions">
+          <label className="details__no-trade details__no-trade--header">
+            <input
+              type="checkbox"
+              checked={Boolean(dayRecord.noTradeDay)}
+              onChange={(event) => onToggleNoTradeDay(event.target.checked)}
+            />
+            <span>No-Trade Day</span>
+          </label>
+          <button
+            type="button"
+            className="details__clear-day"
+            onClick={() => {
+              if (window.confirm("Clear this day? This will remove trades, skips, screenshots, and notes.")) {
+                onClearDay();
+              }
+            }}
+          >
+            Clear Day
+          </button>
+        </div>
       </div>
       <div className="details__top">
         <div className="details__meta">
@@ -155,15 +205,9 @@ export const DayDetails = ({
               onChange={(event) => {
                 const nextComment = event.target.value;
                 setCommentDraft(nextComment);
-                if (commentDebounceRef.current) {
-                  clearTimeout(commentDebounceRef.current);
-                }
-                commentDebounceRef.current = setTimeout(() => {
-                  onUpdateComment(nextComment);
-                }, 450);
+                scheduleDayNoteSave(nextComment, keyMistakeDraft);
               }}
               rows={2}
-              placeholder="What was by plan, where discipline slipped, key takeaways..."
             />
           </label>
         </div>
@@ -193,14 +237,17 @@ export const DayDetails = ({
             ))}
           </select>
         </label>
-
-        <label className="details__no-trade">
+        <label className="details__key-mistake">
+          Key mistake today
           <input
-            type="checkbox"
-            checked={Boolean(dayRecord.noTradeDay)}
-            onChange={(event) => onToggleNoTradeDay(event.target.checked)}
+            type="text"
+            value={keyMistakeDraft}
+            onChange={(event) => {
+              const nextKeyMistake = event.target.value;
+              setKeyMistakeDraft(nextKeyMistake);
+              scheduleDayNoteSave(commentDraft, nextKeyMistake);
+            }}
           />
-          <span>No-Trade Day</span>
         </label>
       </div>
 

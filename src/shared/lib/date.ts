@@ -55,6 +55,11 @@ export const getDayTitleLabel = (dateKey: string): string => {
   return `${month} ${toOrdinal(date.getDate())}`;
 };
 
+export const getDayWeekdayLabel = (dateKey: string): string => {
+  const date = parseDateKey(dateKey);
+  return date.toLocaleDateString("en-US", { weekday: "long" });
+};
+
 export const getWeekdayLabels = (): string[] => {
   const baseMonday = new Date(2024, 0, 1);
   return Array.from({ length: 7 }, (_, index) => {
