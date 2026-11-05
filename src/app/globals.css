@@ -555,6 +555,30 @@ h3 {
   min-width: 0;
 }
 
+.details__actions button:first-child {
+  border-color: color-mix(in srgb, #7ba7ff 58%, var(--border));
+  color: color-mix(in srgb, #b7d0ff 72%, white);
+  background: color-mix(in srgb, #7ba7ff 14%, var(--input-bg));
+  box-shadow: 0 10px 22px rgba(15, 28, 58, 0.34);
+}
+
+.details__actions button:first-child:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #7ba7ff 78%, var(--border));
+  box-shadow: 0 12px 26px rgba(14, 33, 73, 0.42);
+}
+
+.details__actions button:last-child {
+  border-color: color-mix(in srgb, #f0c15d 54%, var(--border));
+  color: color-mix(in srgb, #ffd98a 72%, white);
+  background: color-mix(in srgb, #f0c15d 12%, var(--input-bg));
+  box-shadow: 0 10px 22px rgba(44, 31, 8, 0.34);
+}
+
+.details__actions button:last-child:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #f0c15d 74%, var(--border));
+  box-shadow: 0 12px 26px rgba(54, 36, 6, 0.42);
+}
+
 .edit-panel {
   border: 1px solid var(--border);
   border-radius: 13px;
